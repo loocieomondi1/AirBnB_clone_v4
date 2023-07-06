@@ -1,30 +1,31 @@
 #!/usr/bin/env bash
-# A bash script that sets up web servers for the depolyment of web static
-# !# Install nginx if not installed already
-# Creates the required directories
-# Creates a fake HTML file for test
-# Create a symbolic link
-# sets ownership of folder, updates and restarts nginx
-# exits successfully
+# a Bash script that sets up your web servers for the deployment of web_static
 
-sudo apt-get update
-sudo apt-get -y install nginx
 
-sudo mkdir -p /data/
-sudo mkdir -p /data/web_static/
-sudo mkdir -p /data/web_static/releases/
-sudo mkdir -p /data/web_static/shared/
-sudo mkdir -p /data/web_static/releases/test/
-sudo touch  /data/web_static/releases/test/index.html
+# get package updates
+apt update
 
-echo "<html><head><title>Test HTML file</title></head><body>This is a test HTML file.</body></html>" | sudo tee /data/web_static/releases/test/index.html
+# create the neccessary directories
+apt -y install nginx
 
-sudo ln -sf /data/web_static/releases/test /data/web_static/current
+# create the neccessary folder if they dont exist
+mkdir -p /data/web_static/shared/
+mkdir -p /data/web_static/releases/test/
 
-sudo chown -R ubuntu:ubuntu /data/
+# make a fake html file to test the nginx configuration
+printf "<!DOCTYPE html>\n<html lang="en">\n<head>\n</head>\n<body>\n\t<p>Hello Everyone!</p>\n</body>\n</html>" | tee /data/web_static/releases/test/index.html
 
-sudo sed -i '/listen 80 default_server;/a \\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+# create a sym link of /data/web_static/current to /data/web_static/releases/tests
+ln -sf /data/web_static/releases/test/ /data/web_static/current
 
-sudo service nginx restart
+# recursively give ownership to the /data directory to the ubuntu user and group
+chown -R ubuntu:ubuntu /data/
 
-exit 0
+# update nginx configuration files
+loc_header="location \/hbnb\_static\/ {"
+loc_content="alias \/data\/web\_static\/current\/;"
+new_location="\n\t$loc_header\n\t\t$loc_content\n\t}\n"
+sed -i "37s/$/$new_location/" /etc/nginx/sites-available/default
+
+# Restart Nginx
+service nginx restart
