@@ -1,38 +1,30 @@
 #!/usr/bin/env bash
-# Sets up a web server for deployment of web_static.
+# A bash script that sets up web servers for the depolyment of web static
+# !# Install nginx if not installed already
+# Creates the required directories
+# Creates a fake HTML file for test
+# Create a symbolic link
+# sets ownership of folder, updates and restarts nginx
+# exits successfully
 
-apt-get update
-apt-get install -y nginx
+sudo apt-get update
+sudo apt-get -y install nginx
 
-mkdir -p /data/web_static/releases/test/
-mkdir -p /data/web_static/shared/
-echo "Holberton School" > /data/web_static/releases/test/index.html
-ln -sf /data/web_static/releases/test/ /data/web_static/current
+sudo mkdir -p /data/
+sudo mkdir -p /data/web_static/
+sudo mkdir -p /data/web_static/releases/
+sudo mkdir -p /data/web_static/shared/
+sudo mkdir -p /data/web_static/releases/test/
+sudo touch  /data/web_static/releases/test/index.html
 
-chown -R ubuntu /data/
-chgrp -R ubuntu /data/
+echo "<html><head><title>Test HTML file</title></head><body>This is a test HTML file.</body></html>" | sudo tee /data/web_static/releases/test/index.html
 
-printf %s "server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    add_header X-Served-By $HOSTNAME;
-    root   /var/www/html;
-    index  index.html index.htm;
+sudo ln -sf /data/web_static/releases/test /data/web_static/current
 
-    location /hbnb_static {
-	alias /data/web_static/current;
-	index index.html index.htm;
-    }
+sudo chown -R ubuntu:ubuntu /data/
 
-    location /redirect_me {
-	return 301 http://cuberule.com/;
-    }
+sudo sed -i '/listen 80 default_server;/a \\n\tlocation /hbnb_static {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
 
-    error_page 404 /404.html;
-    location /404 {
-      root /var/www/html;
-      internal;
-    }
-}" > /etc/nginx/sites-available/default
+sudo service nginx restart
 
-service nginx restart
+exit 0
