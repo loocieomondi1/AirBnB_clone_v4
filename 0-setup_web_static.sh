@@ -1,31 +1,44 @@
 #!/usr/bin/env bash
-# a Bash script that sets up your web servers for the deployment of web_static
+# Prepare my webservers (web-01 & web-02)
 
+# uncomment for easy debugging
+#set -x
 
-# get package updates
-apt update
+# colors
+blue='\e[1;34m'
+#brown='\e[0;33m'
+green='\e[1;32m'
+reset='\033[0m'
 
-# create the neccessary directories
-apt -y install nginx
+echo -e "${blue}Updating and doing some minor checks...${reset}\n"
 
-# create the neccessary folder if they dont exist
-mkdir -p /data/web_static/shared/
-mkdir -p /data/web_static/releases/test/
+# install nginx if not present
+if [ ! -x /usr/sbin/nginx ]; then
+	sudo apt-get update -y -qq && \
+	     sudo apt-get install -y nginx
+fi
 
-# make a fake html file to test the nginx configuration
-printf "<!DOCTYPE html>\n<html lang="en">\n<head>\n</head>\n<body>\n\t<p>Hello Everyone!</p>\n</body>\n</html>" | tee /data/web_static/releases/test/index.html
+echo -e "\n${blue}Setting up some minor stuff.${reset}\n"
 
-# create a sym link of /data/web_static/current to /data/web_static/releases/tests
-ln -sf /data/web_static/releases/test/ /data/web_static/current
+# Create directories...
+sudo mkdir -p /data/web_static/releases/test /data/web_static/shared/
 
-# recursively give ownership to the /data directory to the ubuntu user and group
-chown -R ubuntu:ubuntu /data/
+# create index.html for test directory
+echo "<h1>Welcome to th3gr00t.tech <\h1>" | sudo dd status=none of=/data/web_static/releases/test/index.html
 
-# update nginx configuration files
-loc_header="location \/hbnb\_static\/ {"
-loc_content="alias \/data\/web\_static\/current\/;"
-new_location="\n\t$loc_header\n\t\t$loc_content\n\t}\n"
-sed -i "37s/$/$new_location/" /etc/nginx/sites-available/default
+# create symbolic link
+sudo ln -sf /data/web_static/releases/test /data/web_static/current
 
-# Restart Nginx
-service nginx restart
+# give user ownership to directory
+sudo chown -R ubuntu:ubuntu /data/
+
+# backup default server config file
+sudo cp /etc/nginx/sites-enabled/default nginx-sites-enabled_default.backup
+
+# Set-up the content of /data/web_static/current/ to redirect
+# to domain.tech/hbnb_static
+sudo sed -i '37i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+
+sudo service nginx restart
+
+echo -e "${green}Completed${reset}"
