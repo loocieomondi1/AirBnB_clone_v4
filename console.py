@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Defines the HBNB console."""
 import cmd
+import json
 from shlex import split
 from models import storage
 from datetime import datetime
