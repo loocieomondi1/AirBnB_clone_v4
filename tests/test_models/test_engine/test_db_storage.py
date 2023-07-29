@@ -41,7 +41,7 @@ class TestDBStorageDocs(unittest.TestCase):
         """Test tests/test_models/test_db_storage.py conforms to PEP8."""
         pep8s = pep8.StyleGuide(quiet=True)
         result = pep8s.check_files(['tests/test_models/test_engine/\
-test_db_storage.py'])
+                                   test_db_storage.py'])
         self.assertEqual(result.total_errors, 0,
                          "Found code style errors (and warnings).")
 
@@ -94,3 +94,16 @@ class TestDBStorage(unittest.TestCase):
         if states:
             first_state_id = list(states)[0].id
             self.assertIsNotNone(models.storage.get(State, first_state_id))
+    def test_dbstorage_get(self):
+        """Test get method"""
+        new = State(name="Alabama")
+        new.save()
+        state = models.storage.get("State", str(state.id))
+        self.assertEqual(state.name, "Alabama")
+    def test_dbstorage_count(self):
+        """test cound method"""
+        old_count = models.storage.count("State")
+        new = State(name="Alabama")
+        new.save()
+        new_count = models.storage.count("State")
+        self.assertEqual(old_count + 1, new_count)

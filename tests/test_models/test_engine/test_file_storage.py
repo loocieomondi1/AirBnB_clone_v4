@@ -120,3 +120,23 @@ class TestFileStorage(unittest.TestCase):
         if states:
             first_state_id = list(states)[0].id
             self.assertIsNotNone(models.storage.get(State, first_state_id))
+    def test_filestorage_get(self):
+        """Testing Get method"""
+        filestorage = FileStorage()
+        new = State()
+        new.name = "Alabama"
+        filestorage.new(new)
+        new_id = new.id
+        filestorage.save()
+        state = filestorage.get("State", new_id)
+        self.assertEqual(state.name, "Alabama")
+
+    def test_filestorage_count(self):
+        """Test Count method"""
+        filestorage = FileStorage()
+        old_count = filestorage.count("State")
+        new = State(name="Alabama")
+        filestorage.new(new)
+        filestorage.save()
+        new_count = filestorage.count("State")
+        self.assertEqual(old_count + 1, new_count)
