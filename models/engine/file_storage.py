@@ -38,7 +38,7 @@ class FileStorage:
     def new(self, obj):
         """sets in __objects the obj with key <obj class name>.id"""
         if obj is not None:
-            key = str(obj.__class__.__name__) + "." + str(obj.id)
+            key = obj.__class__.__name__ + "." + obj.id
             self.__objects[key] = obj
 
     def save(self):
@@ -46,13 +46,13 @@ class FileStorage:
         json_objects = {}
         for key in self.__objects:
             json_objects[key] = self.__objects[key].to_dict()
-        with open(self.__file_path, 'w', encoding="UTF8") as f:
+        with open(self.__file_path, 'w') as f:
             json.dump(json_objects, f)
 
     def reload(self):
         """deserializes the JSON file to __objects"""
         try:
-            with open(self.__file_path, 'r', encoding="UTF8") as f:
+            with open(self.__file_path, 'r') as f:
                 jo = json.load(f)
             for key in jo:
                 self.__objects[key] = classes[jo[key]["__class__"]](**jo[key])
@@ -62,7 +62,7 @@ class FileStorage:
     def delete(self, obj=None):
         """delete obj from __objects if it’s inside"""
         if obj is not None:
-            key = str(obj.__class__.__name_)_ + '.' + str(obj.id)
+            key = obj.__class__.__name__ + '.' + obj.id
             if key in self.__objects:
                 del self.__objects[key]
 
